@@ -31,9 +31,18 @@ const setup = (editor: Editor): void => {
     console.log('autoCopy...');
     console.log('e: ', e);
 
-    editor.execCommand('copy');
+    /**
+     * This is where i'm having issues. 
+     * This works to copy the contents of the dialog input. 
+     * However, it breaks the copying functionality inside the editor. 
+     * What is the best way to acheive both of these scenarios - fixing normal copy/paste functionality within the editor
+     * While also enabling this custom copy method to grab the value from the anchor_link dialog input and copy to the clipboard?
+     */
 
-    e.clipboardData.setData('text/plain', generatedUrl);
+    editor.execCommand('copy');
+    if (generatedUrl) {
+      e.clipboardData.setData('text/plain', generatedUrl);
+    }
     
   }
   
@@ -89,10 +98,6 @@ const setup = (editor: Editor): void => {
       ],
       // Fires when input changes.
       onChange: (api, details) => {
-        // Get the value from the anchor name input and generate the url
-        // const id = api.getData()['anchor_name'];
-        
-        
         // Only enable the Generate Button if there is text in the input.
         const value = api.getData()['anchor_name'];
         if (value !== '') {
@@ -107,13 +112,8 @@ const setup = (editor: Editor): void => {
       },
       // Fires when 'generateUrl' button is clicked.
       onAction: (api, details) => {
-        console.log('api: ', api);
-        console.log('details: ', details);
-        
         // // Get the value from the anchor name input and generate the url
         const id = api.getData()['anchor_name'];
-        // const formattedId = formatId(id)
-        // const href = createUrl(formattedId);
         
         // If remove format button is clicked.
         if (details.name === 'removeAnchorFormatting') {
@@ -126,46 +126,40 @@ const setup = (editor: Editor): void => {
           } else {
             alert('Selection cannot be empty...')
           }
-          console.log('editor:', editor);
           
           // Copy href to clipboard.
-          generatedUrl = href;
-          // api.setData({'anchor_link': generatedUrl})
           api.focus('anchor_link');
-
-          // editor.execCommand('copy')
-          editor.fire('autoCopy', {'text': generatedUrl})
-          // editor.execCommand('copy');
+          editor.execCommand('copy');
           
           // Provide new Dialog content.
-          // api.redial({
-          //   title: 'Anchor Generated',
-          //   body: {
-          //     type: 'panel',
-          //     items: [
-          //       {
-          //         type: 'alertbanner',
-          //         text: 'The generated URL has been copied to your clipboard.',
-          //         level: 'success',
-          //         icon: 'close',
-          //       },
-          //     ]
-          //   },
-          //   buttons: [
-          //     {
-          //       type: 'cancel',
-          //       text: 'Close',
-          //     }
-          //   ],
-          //   onAction: (api) => {
-          //     api.close();
-          //   }
-          // });
+          api.redial({
+            title: 'Anchor Generated',
+            body: {
+              type: 'panel',
+              items: [
+                {
+                  type: 'alertbanner',
+                  text: 'The generated URL has been copied to your clipboard.',
+                  level: 'success',
+                  icon: 'close',
+                },
+              ]
+            },
+            buttons: [
+              {
+                type: 'cancel',
+                text: 'Close',
+              }
+            ],
+            onAction: (api) => {
+              api.close();
+            }
+          });
   
-          // // Close window after set amount of time.
-          // setTimeout(() => {
-          //   api.close();
-          // }, 5000);
+          // Close window after set amount of time.
+          setTimeout(() => {
+            api.close();
+          }, 5000);
         }
       },
     })
